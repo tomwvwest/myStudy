@@ -42,8 +42,10 @@ export const Menu = () => {
       body: JSON.stringify({
         note_name: "New Note",
       }),
-    }).then(() => {
-      router.push("/notes/4");
+    }).then((data) => {
+      return data.json()
+    }).then(({postedNote}) => {
+      router.push(`/notes/${postedNote.note_id}`);
     });
   };
 

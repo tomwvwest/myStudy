@@ -134,6 +134,19 @@ describe("PATCH note by id", () => {
   });
 });
 
+describe("DELETE a note by id", () => {
+  test('204 - successfully removes note from db', async () => {
+    const response = await fetch('http://localhost:3000/api/notes/1', {
+      method: 'DELETE',
+      headers: { "Content-Type": "application/json" }
+    })
+    expect(response.status).toBe(200)
+
+    const checkExists = await fetch('http://localhost:3000/api/notes/1')
+    expect(checkExists.status).toBe(404)
+  })
+})
+
 describe("GET notes by user id", () => {
   test("200 - returns array of note objects", async () => {
     const response = await fetch("http://localhost:3000/api/notes/users/1");
@@ -252,3 +265,4 @@ describe("POST a note by user id", () => {
     });
   });
 });
+

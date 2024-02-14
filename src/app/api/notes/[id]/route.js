@@ -44,6 +44,23 @@ export async function PATCH(req, { params }) {
     },
     data: noteToPatch,
   });
-  
+
   return NextResponse.json({ patchedNote, status: 200 });
+}
+
+export async function DELETE(req, { params }) {
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json("Bad request", { status: 400 });
+
+  const note = await prisma.Notes.delete({
+    where: {
+      note_id: id,
+    },
+  });
+
+  if (!note) {
+    return NextResponse.json("Note not found", { status: 404 });
+  }
+
+  return NextResponse.json({}, { status: 200 });
 }

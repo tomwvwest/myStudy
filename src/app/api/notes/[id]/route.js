@@ -44,7 +44,6 @@ export async function PATCH(req, { params }) {
     },
     data: noteToPatch,
   });
-
-  console.log(patchedNote);
+  
   return NextResponse.json({ patchedNote, status: 200 });
 }

@@ -1,10 +1,9 @@
 const { PrismaClient } = require("@prisma/client");
 const seedDatabase = require("../seed/seed");
 
-let prisma;
+const prisma = new PrismaClient();
 
 beforeEach(async () => {
-  prisma = new PrismaClient();
   await seedDatabase();
 });
 
@@ -135,24 +134,26 @@ describe("PATCH note by id", () => {
   });
 });
 
-describe("GET notes by user id" , () => {
-  test('200 - returns array of note objects', async () => {
-    const response = await fetch('http://localhost:3000/api/notes/users/1')
-    const {notes} = await response.json()
+describe("GET notes by user id", () => {
+  test("200 - returns array of note objects", async () => {
+    const response = await fetch("http://localhost:3000/api/notes/users/1");
+    const { notes } = await response.json();
 
-    expect(response.status).toBe(200)
-    notes.forEach(note => {
+    expect(response.status).toBe(200);
+    notes.forEach((note) => {
       expect(note).toEqual({
-        note_id : expect.any(Number),
+        note_id: expect.any(Number),
         user_id: 1,
         note_name: expect.any(String),
         contents: expect.any(String),
-        created_at: expect.any(String)
-      })
-    })
-  })
+        created_at: expect.any(String),
+      });
+    });
+  });
   test("404 - return correct error when given id of a user that does not exist", async () => {
-    const response = await fetch("http://localhost:3000/api/notes/users/100000");
+    const response = await fetch(
+      "http://localhost:3000/api/notes/users/100000"
+    );
     expect(response.status).toBe(404);
     const err = await response.json();
     expect(err).toBe("User not found");
@@ -163,4 +164,70 @@ describe("GET notes by user id" , () => {
     const err = await response.json();
     expect(err).toBe("Bad request");
   });
-})
+});
+
+describe("POST a note by user id", () => {
+  test("201 - returns correct note object and adds note to db", async () => {
+    const newNote = {
+      note_name: "new posted note",
+      contents: "This is a new note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/users/1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    const { postedNote } = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(postedNote).toEqual({
+      note_name: "new posted note",
+      contents: "This is a new note",
+      user_id: 1,
+      created_at: expect.any(String),
+      note_id: 4,
+    });
+
+    const checkNoteExists = await fetch("http://localhost:3000/api/notes/4");
+    const { note } = await checkNoteExists.json();
+    expect(checkNoteExists.status).toBe(200);
+    expect(note).toEqual({
+      note_name: "new posted note",
+      contents: "This is a new note",
+      user_id: 1,
+      created_at: expect.any(String),
+      note_id: 4,
+    });
+  });
+  test("404 - return correct error when given id of a user that does not exist", async () => {
+    const newNote = {
+      note_name: "new posted note",
+      contents: "This is a new note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/users/1000", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("Error occured");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const newNote = {
+      note_name: "new posted note",
+      contents: "This is a new note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/users/bad", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
+  });
+});

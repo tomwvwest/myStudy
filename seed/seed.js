@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
 const { users, notes } = require("../data/index");
-const prisma = new PrismaClient();
+const { prisma } = require("../lib/prisma");
 
 const seedDatabase = async () => {
   try {
@@ -10,12 +9,12 @@ const seedDatabase = async () => {
     await prisma.users.createMany({ data: users });
     await prisma.notes.createMany({ data: notes });
 
-    console.log('Data successfully inserted');
+    console.log("Data successfully inserted");
   } catch (error) {
-    console.log('Error inserting data:', error);
+    console.log("Error inserting data:", error);
   } finally {
     await prisma.$disconnect();
   }
 };
 
-seedDatabase();
+module.exports = seedDatabase;

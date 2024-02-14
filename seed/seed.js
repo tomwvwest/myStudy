@@ -9,7 +9,7 @@ const seedDatabase = async () => {
     await prisma.users.createMany({ data: users });
     await prisma.notes.createMany({ data: notes });
 
-    console.log("Data successfully inserted");
+    // console.log("Data successfully inserted");
   } catch (error) {
     console.log("Error inserting data:", error);
   } finally {

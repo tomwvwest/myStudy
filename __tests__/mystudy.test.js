@@ -230,4 +230,25 @@ describe("POST a note by user id", () => {
     const err = await response.json();
     expect(err).toBe("Bad request");
   });
+  test("201 - returns correct note object if contents is not specified", async () => {
+    const newNote = {
+      note_name: "new posted note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/users/1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    const { postedNote } = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(postedNote).toEqual({
+      note_name: "new posted note",
+      contents: "",
+      user_id: 1,
+      created_at: expect.any(String),
+      note_id: 4,
+    });
+  });
 });

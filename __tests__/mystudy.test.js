@@ -134,3 +134,33 @@ describe("PATCH note by id", () => {
     expect(err).toBe("Bad request");
   });
 });
+
+describe("GET notes by user id" , () => {
+  test('200 - returns array of note objects', async () => {
+    const response = await fetch('http://localhost:3000/api/notes/users/1')
+    const {notes} = await response.json()
+
+    expect(response.status).toBe(200)
+    notes.forEach(note => {
+      expect(note).toEqual({
+        note_id : expect.any(Number),
+        user_id: 1,
+        note_name: expect.any(String),
+        contents: expect.any(String),
+        created_at: expect.any(String)
+      })
+    })
+  })
+  test("404 - return correct error when given id of a user that does not exist", async () => {
+    const response = await fetch("http://localhost:3000/api/notes/users/100000");
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("User not found");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const response = await fetch("http://localhost:3000/api/notes/users/bad");
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
+  });
+})

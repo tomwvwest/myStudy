@@ -103,4 +103,34 @@ describe("PATCH note by id", () => {
       contents: "This is a patched note",
     });
   });
+  test("404 - return correct error when given id of a note that does not exist", async () => {
+    const newNote = {
+      note_name: "patched note",
+      contents: "This is a patched note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/1000", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("Note not found");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const newNote = {
+      note_name: "patched note",
+      contents: "This is a patched note",
+    };
+
+    const response = await fetch("http://localhost:3000/api/notes/bad", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newNote),
+    });
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
+  });
 });

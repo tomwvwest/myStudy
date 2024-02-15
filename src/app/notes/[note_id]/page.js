@@ -1,13 +1,17 @@
 "use client";
 import { LoadingSkeleton } from "@/app/components/general/LoadingSkeleton";
-import { useEffect, useState } from "react";
+import { useDebounce } from "@uidotdev/usehooks";
+import { useEffect, useRef, useState } from "react";
 
 export default function NotePage({ params }) {
   const note_id = params.note_id;
   const [currentNote, setCurrentNote] = useState({});
   const [titleInput, setTitleInput] = useState("");
+  const [textInput, setTextInput] = useState("");
   const [updateTitleVisible, setUpdateTitleVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
+  const textAreaRef = useRef(null);
+  const debouncedContent = useDebounce(textInput, 1000);
 
   useEffect(() => {
     fetch(`/api/notes/${note_id}`)
@@ -15,13 +19,30 @@ export default function NotePage({ params }) {
       .then(({ note }) => {
         setCurrentNote(note);
         setTitleInput(note.note_name);
-        setIsLoading(false)
+        setTextInput(note.contents);
+        setIsLoading(false);
+        adjustTextHeight();
       });
   }, []);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    adjustTextHeight();
+  }, [textInput]);
+
+  const adjustTextHeight = () => {
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = "auto"; // Reset the height to auto
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`; // Set the height to the scroll height
+    }
+  };
+
+  const handleTitleChange = (e) => {
     setUpdateTitleVisible(true);
     setTitleInput(e.target.value);
+  };
+
+  const handleTextChange = async (e) => {
+    setTextInput(e.target.value);
   };
 
   const handleUpdateTitle = async () => {
@@ -40,8 +61,24 @@ export default function NotePage({ params }) {
     setUpdateTitleVisible(false);
   };
 
-  if(isLoading){
-    return <LoadingSkeleton/>
+  const patchText = (contents) => {
+    fetch(`/api/notes/${note_id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents
+      }),
+    })
+  };
+
+  useEffect(() => {
+    if(debouncedContent){
+      patchText(debouncedContent)
+    }
+  }, [debouncedContent])
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
   }
 
   return (
@@ -51,7 +88,7 @@ export default function NotePage({ params }) {
           value={titleInput}
           type="text"
           className="focus:outline-none  text-4xl font-semibold mb-2 w-[80%]"
-          onChange={handleChange}
+          onChange={handleTitleChange}
           key={currentNote.note_id}
         ></input>
         <div className="grid grid-cols-2 w-fit gap-2">
@@ -76,7 +113,15 @@ export default function NotePage({ params }) {
         </div>
       </div>
 
-      <p>{currentNote.contents}</p>
+      <textarea
+        ref={textAreaRef}
+        className=" w-full flex focus:outline-none resize-none"
+        style={{ height: "auto" }}
+        value={textInput}
+        onChange={handleTextChange}
+        id="contentsTextArea"
+        placeholder="Start note here..."
+      ></textarea>
     </section>
   );
 }

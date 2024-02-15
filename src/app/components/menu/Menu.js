@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../contexts/userContext";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 
@@ -23,31 +22,46 @@ export const Menu = () => {
         });
         setNotes(sortedNotes);
       });
-  }, [handleNewPage]);
+  }, [handleNewPage, handleDeletePage]);
 
   useEffect(() => {
     const typeRegex = /^\/([^/]+)\//;
     const typeIdRegex = /^\/[^/]+\/(\d+)/;
-    const type = pathname.match(typeRegex)[1];
-    if (type === "notes") {
-      const id = pathname.match(typeIdRegex)[1];
-      setCurrentNoteId(id);
+    if (typeRegex.test(pathname)) {
+      const type = pathname.match(typeRegex)[1];
+      if (type === "notes") {
+        const id = pathname.match(typeIdRegex)[1];
+        setCurrentNoteId(id);
+      }
     }
   }, [pathname]);
 
-  function handleNewPage (){
+  function handleNewPage() {
     fetch(`/api/notes/users/${user.user_id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         note_name: "New Note",
       }),
-    }).then((data) => {
-      return data.json()
-    }).then(({postedNote}) => {
-      router.push(`/notes/${postedNote.note_id}`);
+    })
+      .then((data) => {
+        return data.json();
+      })
+      .then(({ postedNote }) => {
+        router.push(`/notes/${postedNote.note_id}`);
+      });
+  }
+
+  function handleDeletePage(e) {
+    e.stopPropagation();
+    const id = e.target.id;
+    fetch(`/api/notes/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    }).then(() => {
+      router.push(`/`);
     });
-  };
+  }
 
   return (
     <section className=" fixed h-screen w-56 flex items-center justify-end pr-1 ">
@@ -70,26 +84,36 @@ export const Menu = () => {
           <li className="font-bold px-4 py-1">Notes</li>
           {notes.map((note) => {
             return (
-              <Link href={`/notes/${note.note_id}`} key={note.note_id}>
-                <li
-                  className={`px-1 py-[2px] hover:bg-white flex items-center hover:cursor-pointer ${
+              <li
+                className={`px-1 py-[2px] hover:bg-white relative flex items-center hover:cursor-pointer ${
+                  note.note_id === parseInt(currentNoteId)
+                    ? "bg-white bg-opacity-20 hover:bg-opacity-40"
+                    : "hover:bg-opacity-20"
+                }`}
+                onClick={() => router.push(`/notes/${note.note_id}`)}
+                key={note.note_id}
+              >
+                <img src="../navigate-right.png" className="invert"></img>
+                <p
+                  className={`${
                     note.note_id === parseInt(currentNoteId)
-                      ? "bg-white bg-opacity-20 hover:bg-opacity-40"
-                      : "hover:bg-opacity-20"
+                      ? "font-bold"
+                      : null
                   }`}
                 >
-                  <img src="../navigate-right.png" className="invert"></img>
-                  <p
-                    className={`${
-                      note.note_id === parseInt(currentNoteId)
-                        ? "font-bold"
-                        : null
-                    }`}
-                  >
-                    {note.note_name}
-                  </p>
-                </li>
-              </Link>
+                  {note.note_name}
+                </p>
+                <div
+                  className="hover:cursor-pointer hover:bg-white hover:bg-opacity-20 rounded-full absolute right-3 p-[2px]"
+                  onClick={handleDeletePage}
+                >
+                  <img
+                    src="/delete.png"
+                    className="invert w-5"
+                    id={note.note_id}
+                  ></img>
+                </div>
+              </li>
             );
           })}
           <li

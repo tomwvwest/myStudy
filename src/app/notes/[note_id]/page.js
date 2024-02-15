@@ -5,7 +5,7 @@ export default function NotePage({ params }) {
   const note_id = params.note_id;
   const [currentNote, setCurrentNote] = useState({});
   const [titleInput, setTitleInput] = useState("");
-  const [updateTitleVisible, setUpdateTitleVisible] = useState(false)
+  const [updateTitleVisible, setUpdateTitleVisible] = useState(false);
 
   useEffect(() => {
     fetch(`/api/notes/${note_id}`)
@@ -17,25 +17,25 @@ export default function NotePage({ params }) {
   }, []);
 
   const handleChange = (e) => {
-    setUpdateTitleVisible(true)
+    setUpdateTitleVisible(true);
     setTitleInput(e.target.value);
   };
 
   const handleUpdateTitle = async () => {
-    setUpdateTitleVisible(false)
+    setUpdateTitleVisible(false);
     await fetch(`/api/notes/${note_id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        note_name : titleInput
-      })
-    })
-  }
-  
+        note_name: titleInput,
+      }),
+    });
+  };
+
   const handleUndoTitle = () => {
-    setTitleInput(currentNote.note_name)
-    setUpdateTitleVisible(false)
-  }
+    setTitleInput(currentNote.note_name);
+    setUpdateTitleVisible(false);
+  };
 
   return (
     <section>
@@ -48,8 +48,24 @@ export default function NotePage({ params }) {
           key={currentNote.note_id}
         ></input>
         <div className="grid grid-cols-2 w-fit gap-2">
-        <button className={`ml-1 w-fit px-1 py-[1px] text-sm bg-blue text-white rounded transition duration-200 ${updateTitleVisible ? 'opacity-100' : 'opacity-0'}`} onClick={handleUpdateTitle}>Update</button>
-        <button className={`ml-1 w-fit px-1 py-[1px] text-sm bg-red text-white rounded transition duration-200 ${updateTitleVisible ? 'opacity-100' : 'opacity-0'}`} onClick={handleUndoTitle}>Undo</button>
+          <button
+            className={`ml-1 w-fit px-1 py-[1px] text-sm bg-blue text-white rounded transition duration-200 ${
+              updateTitleVisible ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={handleUpdateTitle}
+            disabled={!updateTitleVisible}
+          >
+            Update
+          </button>
+          <button
+            className={`ml-1 w-fit px-1 py-[1px] text-sm bg-red text-white rounded transition duration-200 ${
+              updateTitleVisible ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={handleUndoTitle}
+            disabled={!updateTitleVisible}
+          >
+            Undo
+          </button>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import { LoadingSkeleton } from "@/app/components/general/LoadingSkeleton";
 import { useEffect, useState } from "react";
 
 export default function NotePage({ params }) {
@@ -6,6 +7,7 @@ export default function NotePage({ params }) {
   const [currentNote, setCurrentNote] = useState({});
   const [titleInput, setTitleInput] = useState("");
   const [updateTitleVisible, setUpdateTitleVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetch(`/api/notes/${note_id}`)
@@ -13,6 +15,7 @@ export default function NotePage({ params }) {
       .then(({ note }) => {
         setCurrentNote(note);
         setTitleInput(note.note_name);
+        setIsLoading(false)
       });
   }, []);
 
@@ -36,6 +39,10 @@ export default function NotePage({ params }) {
     setTitleInput(currentNote.note_name);
     setUpdateTitleVisible(false);
   };
+
+  if(isLoading){
+    return <LoadingSkeleton/>
+  }
 
   return (
     <section>

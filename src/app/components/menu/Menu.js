@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "../../contexts/userContext";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export const Menu = () => {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export const Menu = () => {
   }, [handleNewPage, handleDeletePage]);
 
   useEffect(() => {
+    const isHomeRegex = /^\/$/;
     const typeRegex = /^\/([^/]+)\//;
     const typeIdRegex = /^\/[^/]+\/(\d+)/;
     if (typeRegex.test(pathname)) {
@@ -33,6 +35,8 @@ export const Menu = () => {
         const id = pathname.match(typeIdRegex)[1];
         setCurrentNoteId(id);
       }
+    } else if (isHomeRegex.test(pathname)) {
+      setCurrentNoteId("home");
     }
   }, [pathname]);
 
@@ -70,9 +74,17 @@ export const Menu = () => {
           <li className="font-bold px-4 py-1">
             Welcome <span className="italic">{user.username}</span>
           </li>
-          <li className="px-4 py-[2px] hover:bg-white hover:bg-opacity-20">
-            Home
-          </li>
+          <Link href="/">
+            <li
+              className={`px-4 py-[2px] hover:bg-white ${
+                currentNoteId === "home"
+                  ? "bg-white bg-opacity-20 hover:bg-opacity-40"
+                  : "hover:bg-opacity-20"
+              }`}
+            >
+              Home
+            </li>
+          </Link>
           <li className="px-4 py-[2px] hover:bg-white hover:bg-opacity-20">
             Search
           </li>
@@ -90,7 +102,10 @@ export const Menu = () => {
                     ? "bg-white bg-opacity-20 hover:bg-opacity-40"
                     : "hover:bg-opacity-20"
                 }`}
-                onClick={() => router.push(`/notes/${note.note_id}`)}
+                onClick={() => {
+                  setCurrentNoteId(note.note_id);
+                  router.push(`/notes/${note.note_id}`);
+                }}
                 key={note.note_id}
               >
                 <img src="../navigate-right.png" className="invert"></img>

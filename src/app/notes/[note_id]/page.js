@@ -8,10 +8,10 @@ export default function NotePage({ params }) {
   const [currentNote, setCurrentNote] = useState({});
   const [titleInput, setTitleInput] = useState("");
   const [textInput, setTextInput] = useState("");
-  const [updateTitleVisible, setUpdateTitleVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const textAreaRef = useRef(null);
-  const debouncedContent = useDebounce(textInput, 1000);
+  const debouncedContent = useDebounce(textInput, 500);
+  const debouncedTitle = useDebounce(titleInput, 500);
 
   useEffect(() => {
     fetch(`/api/notes/${note_id}`)
@@ -31,13 +31,12 @@ export default function NotePage({ params }) {
 
   const adjustTextHeight = () => {
     if (textAreaRef.current) {
-      textAreaRef.current.style.height = "auto"; // Reset the height to auto
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`; // Set the height to the scroll height
+      textAreaRef.current.style.height = "auto";
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     }
   };
 
   const handleTitleChange = (e) => {
-    setUpdateTitleVisible(true);
     setTitleInput(e.target.value);
   };
 
@@ -45,9 +44,8 @@ export default function NotePage({ params }) {
     setTextInput(e.target.value);
   };
 
-  const handleUpdateTitle = async () => {
-    setUpdateTitleVisible(false);
-    await fetch(`/api/notes/${note_id}`, {
+  const patchTitle = () => {
+    fetch(`/api/notes/${note_id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -56,26 +54,29 @@ export default function NotePage({ params }) {
     });
   };
 
-  const handleUndoTitle = () => {
-    setTitleInput(currentNote.note_name);
-    setUpdateTitleVisible(false);
-  };
-
   const patchText = (contents) => {
     fetch(`/api/notes/${note_id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents
+        contents,
       }),
-    })
+    }).then((res) => {
+      console.log(res.json());
+    });
   };
 
   useEffect(() => {
-    if(debouncedContent){
-      patchText(debouncedContent)
+    if (debouncedContent) {
+      patchText(debouncedContent);
     }
-  }, [debouncedContent])
+  }, [debouncedContent]);
+
+  useEffect(() => {
+    if (debouncedTitle) {
+      patchTitle(debouncedTitle);
+    }
+  }, [debouncedTitle]);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -91,26 +92,6 @@ export default function NotePage({ params }) {
           onChange={handleTitleChange}
           key={currentNote.note_id}
         ></input>
-        <div className="grid grid-cols-2 w-fit gap-2">
-          <button
-            className={`ml-1 w-fit px-1 py-[1px] text-sm bg-blue text-white rounded transition duration-200 ${
-              updateTitleVisible ? "opacity-100" : "opacity-0"
-            }`}
-            onClick={handleUpdateTitle}
-            disabled={!updateTitleVisible}
-          >
-            Update
-          </button>
-          <button
-            className={`ml-1 w-fit px-1 py-[1px] text-sm bg-red text-white rounded transition duration-200 ${
-              updateTitleVisible ? "opacity-100" : "opacity-0"
-            }`}
-            onClick={handleUndoTitle}
-            disabled={!updateTitleVisible}
-          >
-            Undo
-          </button>
-        </div>
       </div>
 
       <textarea
@@ -118,10 +99,14 @@ export default function NotePage({ params }) {
         className=" w-full flex focus:outline-none resize-none"
         style={{ height: "auto" }}
         value={textInput}
-        onChange={handleTextChange}
         id="contentsTextArea"
         placeholder="Start note here..."
+        onChange={handleTextChange}
       ></textarea>
+
+      <div className="border w-full h-12 mt-6 rounded-xl flex justify-between">
+        <button>Add Photo</button>
+      </div>
     </section>
   );
 }

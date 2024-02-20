@@ -57,14 +57,13 @@ export const Menu = () => {
   }
 
   function handleDeletePage(e) {
+    router.push(`/`);
     e.stopPropagation();
     const id = e.target.id;
     fetch(`/api/notes/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-    }).then(() => {
-      router.push(`/`);
-    });
+    })
   }
 
   return (

@@ -103,10 +103,6 @@ export default function NotePage({ params }) {
         placeholder="Start note here..."
         onChange={handleTextChange}
       ></textarea>
-
-      <div className="border w-full h-12 mt-6 rounded-xl flex justify-between">
-        <button>Add Photo</button>
-      </div>
     </section>
   );
 }

@@ -61,9 +61,7 @@ export default function NotePage({ params }) {
       body: JSON.stringify({
         contents,
       }),
-    }).then((res) => {
-      console.log(res.json());
-    });
+    })
   };
 
   useEffect(() => {

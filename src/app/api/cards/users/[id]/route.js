@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../../../lib/prisma";
+import { parseSetCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export async function GET(req, { params }) {
   const id = Number(params.id);
@@ -15,10 +16,27 @@ export async function GET(req, { params }) {
     return NextResponse.json("Cards not found", { status: 404 });
   }
 
-  cardSets.forEach(cardSet => {
-    const parsedContents = cardSet.contents.map(arr => JSON.parse(arr))
-    cardSet.contents = parsedContents
-  })
+  cardSets.forEach((cardSet) => {
+    const parsedContents = cardSet.contents.map((arr) => JSON.parse(arr));
+    cardSet.contents = parsedContents;
+  });
 
   return NextResponse.json({ cardSets, status: 200 });
+}
+
+export async function POST(req, { params }) {
+  const id = Number(params.id);
+  if (isNaN(id)) return NextResponse.json("Bad request", { status: 400 });
+
+  const { cardSet_name, contents } = await req.json();
+  const formattedContents = contents.map(content => JSON.stringify(content))
+
+  const newCard = await prisma.cardSets.create({
+    data: { cardSet_name, contents: formattedContents, user_id: id },
+  });
+
+  const parsedContents = newCard.contents.map(content => JSON.parse(content))
+  newCard.contents = parsedContents
+  
+  return NextResponse.json({ postedCard: newCard }, { status: 201 });
 }

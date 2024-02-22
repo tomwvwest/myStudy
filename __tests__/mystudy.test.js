@@ -325,7 +325,9 @@ describe("GET flashcards by user id", () => {
     });
   });
   test("404 - return correct error when given id of a card that does not exist", async () => {
-    const response = await fetch("http://localhost:3000/api/cards/users/100000");
+    const response = await fetch(
+      "http://localhost:3000/api/cards/users/100000"
+    );
     expect(response.status).toBe(404);
     const err = await response.json();
     expect(err).toBe("Cards not found");
@@ -335,5 +337,53 @@ describe("GET flashcards by user id", () => {
     expect(response.status).toBe(400);
     const err = await response.json();
     expect(err).toBe("Bad request");
+  });
+});
+
+describe("POST flashcard by user id", () => {
+  test("201 - return posted flashcards and check they have been added to db", async () => {
+    const newCardSet = {
+      cardSet_name: "Maths",
+      contents: [
+        ["1+1", "2"],
+        ["2+2", "4"],
+        ["3+3", "6"]
+      ]
+    };
+
+    const response = await fetch("http://localhost:3000/api/cards/users/1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCardSet),
+    });
+    const { postedCard } = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(postedCard).toEqual({
+      cardSet_name: "Maths",
+      contents: [
+        ["1+1", "2"],
+        ["2+2", "4"],
+        ["3+3", "6"]
+      ],
+      user_id: 1,
+      created_at: expect.any(String),
+      cardSet_id: 4,
+    });
+
+    const checkCardExists = await fetch("http://localhost:3000/api/cards/4");
+    const { card } = await checkCardExists.json();
+    expect(checkCardExists.status).toBe(200);
+    expect(card).toEqual({
+      cardSet_name: "Maths",
+      contents: [
+        ["1+1", "2"],
+        ["2+2", "4"],
+        ["3+3", "6"]
+      ],
+      user_id: 1,
+      created_at: expect.any(String),
+      cardSet_id: 4,
+    });
   });
 });

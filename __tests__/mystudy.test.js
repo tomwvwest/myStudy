@@ -40,6 +40,8 @@ describe("GET user by ID", () => {
   });
 });
 
+//---------------------------------------
+
 describe("GET note by id", () => {
   test("200 - returns correct note object", async () => {
     const response = await fetch("http://localhost:3000/api/notes/1");
@@ -266,6 +268,8 @@ describe("POST a note by user id", () => {
   });
 });
 
+//---------------------------------------
+
 describe("GET flashcards by id", () => {
   test("200 - return correct flashcard array", async () => {
     const response = await fetch("http://localhost:3000/api/cards/1");
@@ -287,15 +291,47 @@ describe("GET flashcards by id", () => {
     });
   });
   test("404 - return correct error when given id of a card that does not exist", async () => {
-    const response = await fetch(
-      "http://localhost:3000/api/cards/100000"
-    );
+    const response = await fetch("http://localhost:3000/api/cards/100000");
     expect(response.status).toBe(404);
     const err = await response.json();
     expect(err).toBe("Cards not found");
   });
   test("400 - return correct error when bad request", async () => {
     const response = await fetch("http://localhost:3000/api/cards/bad");
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
+  });
+});
+
+describe("GET flashcards by user id", () => {
+  test("200 - returns array of card objects", async () => {
+    const response = await fetch("http://localhost:3000/api/cards/users/1");
+    expect(response.status).toBe(200);
+
+    const { cardSets } = await response.json();
+
+    cardSets.forEach((cardSet) => {
+      expect(cardSet).toMatchObject({
+        cardSet_id: expect.any(Number),
+        cardSet_name: expect.any(String),
+        user_id: 1,
+        created_at: expect.any(String),
+      });
+
+      cardSet.contents.forEach((content) => {
+        expect(Array.isArray(content)).toBe(true);
+      });
+    });
+  });
+  test("404 - return correct error when given id of a card that does not exist", async () => {
+    const response = await fetch("http://localhost:3000/api/cards/users/100000");
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("Cards not found");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const response = await fetch("http://localhost:3000/api/cards/users/bad");
     expect(response.status).toBe(400);
     const err = await response.json();
     expect(err).toBe("Bad request");

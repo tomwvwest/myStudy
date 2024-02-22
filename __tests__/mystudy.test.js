@@ -347,8 +347,8 @@ describe("POST flashcard by user id", () => {
       contents: [
         ["1+1", "2"],
         ["2+2", "4"],
-        ["3+3", "6"]
-      ]
+        ["3+3", "6"],
+      ],
     };
 
     const response = await fetch("http://localhost:3000/api/cards/users/1", {
@@ -364,7 +364,7 @@ describe("POST flashcard by user id", () => {
       contents: [
         ["1+1", "2"],
         ["2+2", "4"],
-        ["3+3", "6"]
+        ["3+3", "6"],
       ],
       user_id: 1,
       created_at: expect.any(String),
@@ -379,11 +379,49 @@ describe("POST flashcard by user id", () => {
       contents: [
         ["1+1", "2"],
         ["2+2", "4"],
-        ["3+3", "6"]
+        ["3+3", "6"],
       ],
       user_id: 1,
       created_at: expect.any(String),
       cardSet_id: 4,
     });
+  });
+  test("404 - return correct error when given id of a card that does not exist", async () => {
+    const newCardSet = {
+      cardSet_name: "Maths",
+      contents: [
+        ["1+1", "2"],
+        ["2+2", "4"],
+        ["3+3", "6"],
+      ],
+    };
+
+    const response = await fetch("http://localhost:3000/api/cards/users/100000", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCardSet),
+    });
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("User not found");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const newCardSet = {
+      cardSet_name: "Maths",
+      contents: [
+        ["1+1", "2"],
+        ["2+2", "4"],
+        ["3+3", "6"],
+      ],
+    };
+
+    const response = await fetch("http://localhost:3000/api/cards/users/bad", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCardSet),
+    });
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
   });
 });

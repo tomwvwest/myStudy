@@ -25,6 +25,9 @@ export async function GET(req, { params }) {
 }
 
 export async function POST(req, { params }) {
+  try{
+
+  
   const id = Number(params.id);
   if (isNaN(id)) return NextResponse.json("Bad request", { status: 400 });
 
@@ -35,8 +38,16 @@ export async function POST(req, { params }) {
     data: { cardSet_name, contents: formattedContents, user_id: id },
   });
 
+  if (!newCard) {
+    return NextResponse.json("Error occured", { status: 500 });
+  }
+
   const parsedContents = newCard.contents.map(content => JSON.parse(content))
   newCard.contents = parsedContents
-  
+
   return NextResponse.json({ postedCard: newCard }, { status: 201 });
+} catch(err){
+  return NextResponse.json("User not found", { status: 404 });
+
+}
 }

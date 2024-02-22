@@ -34,5 +34,5 @@ model CardSets {
   user_id Int
   user Users @relation(fields: [user_id], references: [user_id])
   created_at DateTime @default(now())
-  contents String[]
+  contents Json[]
 }

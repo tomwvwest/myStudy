@@ -40,7 +40,7 @@ describe("GET user by ID", () => {
   });
 });
 
-describe("GET notes by id", () => {
+describe("GET note by id", () => {
   test("200 - returns correct note object", async () => {
     const response = await fetch("http://localhost:3000/api/notes/1");
     const { note } = await response.json();
@@ -135,17 +135,17 @@ describe("PATCH note by id", () => {
 });
 
 describe("DELETE a note by id", () => {
-  test('204 - successfully removes note from db', async () => {
-    const response = await fetch('http://localhost:3000/api/notes/1', {
-      method: 'DELETE',
-      headers: { "Content-Type": "application/json" }
-    })
-    expect(response.status).toBe(200)
+  test("204 - successfully removes note from db", async () => {
+    const response = await fetch("http://localhost:3000/api/notes/1", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(response.status).toBe(200);
 
-    const checkExists = await fetch('http://localhost:3000/api/notes/1')
-    expect(checkExists.status).toBe(404)
-  })
-})
+    const checkExists = await fetch("http://localhost:3000/api/notes/1");
+    expect(checkExists.status).toBe(404);
+  });
+});
 
 describe("GET notes by user id", () => {
   test("200 - returns array of note objects", async () => {
@@ -267,5 +267,37 @@ describe("POST a note by user id", () => {
 });
 
 describe("GET flashcards by id", () => {
-  test('200 - retusn flashcard')
-})
+  test("200 - return correct flashcard array", async () => {
+    const response = await fetch("http://localhost:3000/api/cards/1");
+    expect(response.status).toBe(200);
+    const { card } = await response.json();
+    expect(card).toEqual({
+      cardSet_id: 1,
+      cardSet_name: "History",
+      user_id: 1,
+      created_at: expect.any(String),
+      contents: [
+        ["What year did World War II end?", "1945"],
+        [
+          "Who was the first president of the United States?",
+          "George Washington",
+        ],
+        ["What is the capital of France?", "Paris"],
+      ],
+    });
+  });
+  test("404 - return correct error when given id of a card that does not exist", async () => {
+    const response = await fetch(
+      "http://localhost:3000/api/cards/100000"
+    );
+    expect(response.status).toBe(404);
+    const err = await response.json();
+    expect(err).toBe("Cards not found");
+  });
+  test("400 - return correct error when bad request", async () => {
+    const response = await fetch("http://localhost:3000/api/cards/bad");
+    expect(response.status).toBe(400);
+    const err = await response.json();
+    expect(err).toBe("Bad request");
+  });
+});

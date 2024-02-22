@@ -26,8 +26,6 @@ export async function GET(req, { params }) {
 
 export async function POST(req, { params }) {
   try{
-
-  
   const id = Number(params.id);
   if (isNaN(id)) return NextResponse.json("Bad request", { status: 400 });
 

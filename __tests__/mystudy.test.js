@@ -304,6 +304,55 @@ describe("GET flashcards by id", () => {
   });
 });
 
+describe("PATCH flashcard by id", () => {
+  test("200 - returns patched note and updates db for name change only", async () => {
+    const cardSetToPatch = {
+      cardSet_name: "Patched History",
+    };
+
+    const response = await fetch("http://localhost:3000/api/cards/1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cardSetToPatch),
+    });
+    const { patchedCardSet } = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(patchedCardSet).toEqual({
+      cardSet_name: "Patched History",
+      user_id: 1,
+      contents: [
+        ["What year did World War II end?", "1945"],
+        [
+          "Who was the first president of the United States?",
+          "George Washington",
+        ],
+        ["What is the capital of France?", "Paris"],
+      ],
+      created_at: expect.any(String),
+      cardSet_id: 1,
+    });
+
+    const checkCardExists = await fetch("http://localhost:3000/api/cards/1");
+    const { card } = await checkCardExists.json();
+    expect(checkCardExists.status).toBe(200);
+    expect(card).toEqual({
+      cardSet_name: "Patched History",
+      user_id: 1,
+      contents: [
+        ["What year did World War II end?", "1945"],
+        [
+          "Who was the first president of the United States?",
+          "George Washington",
+        ],
+        ["What is the capital of France?", "Paris"],
+      ],
+      created_at: expect.any(String),
+      cardSet_id: 1
+    });
+  });
+});
+
 describe("GET flashcards by user id", () => {
   test("200 - returns array of card objects", async () => {
     const response = await fetch("http://localhost:3000/api/cards/users/1");
@@ -396,11 +445,14 @@ describe("POST flashcard by user id", () => {
       ],
     };
 
-    const response = await fetch("http://localhost:3000/api/cards/users/100000", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newCardSet),
-    });
+    const response = await fetch(
+      "http://localhost:3000/api/cards/users/100000",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCardSet),
+      }
+    );
     expect(response.status).toBe(404);
     const err = await response.json();
     expect(err).toBe("User not found");
